@@ -12,11 +12,12 @@ import tasqsym_encoder.aimodel.aimodel_base as aimodel_base
 class PickPlaceScenario(aimodel_base.AIModel):
 
     def __init__(self, credentials: dict, use_azure: bool=True, logdir: str=''):
-        dirpath = './src/tasqsym_samples/aimodel_samples'
-        self.dir_system = os.path.join(dirpath, 'system')
-        self.dir_prompt = os.path.join(dirpath, 'prompt')
-        self.dir_query = os.path.join(dirpath, 'query')
-        self.action_definitions_file = os.path.join(dirpath, 'action_definitions.json')
+        # Use relative paths from this file location
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        self.dir_system = os.path.join(current_file_dir, 'system')
+        self.dir_prompt = os.path.join(current_file_dir, 'prompt')
+        self.dir_query = os.path.join(current_file_dir, 'query')
+        self.action_definitions_file = os.path.join(current_file_dir, 'action_definitions.json')
         self.prompt_load_order = [
             'role_prompt',
             'environment_prompt',

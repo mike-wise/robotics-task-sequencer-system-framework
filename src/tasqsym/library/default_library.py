@@ -3,7 +3,9 @@
 # Licensed under the MIT License.
 # --------------------------------------------------------------------------------------------
 
-path = "tasqsym.library."
+# Use the current module's name to derive the path, making it independent of repo name
+current_module = __name__  # "tasqsym.library.default_library"
+path = ".".join(current_module.split(".")[:-1]) + "."  # "tasqsym.library."
 
 """
 If your robot uses custom/alt skills, import default_library.library and edit fields.

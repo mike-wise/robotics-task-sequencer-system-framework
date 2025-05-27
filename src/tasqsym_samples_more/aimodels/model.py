@@ -12,11 +12,13 @@ import tasqsym_encoder.aimodel.aimodel_base as aimodel_base
 class ComplexScenario(aimodel_base.AIModel):
 
     def __init__(self, credentials: dict, use_azure: bool=True, logdir: str=''):
-        samples_dirpath = '../robotics-task-sequencer-system-framework/src/tasqsym_samples/aimodel_samples'
+        # Use relative paths from this file location
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        samples_dirpath = os.path.normpath(os.path.join(current_file_dir, '../../tasqsym_samples/aimodel_samples'))
         self.dir_system = os.path.join(samples_dirpath, 'system')  # use same ones as tasqsym_samples
         self.dir_query = os.path.join(samples_dirpath, 'query')    # use same ones as tasqsym_samples
-
-        more_dirpath = '../robotics-task-sequencer-system-framework/src/tasqsym_samples_more/aimodels'
+        
+        more_dirpath = os.path.dirname(os.path.abspath(__file__))
         self.dir_prompt = os.path.join(more_dirpath, 'prompt')
         self.action_definitions_file = os.path.join(more_dirpath, 'action_definitions.json')
         self.prompt_load_order = [

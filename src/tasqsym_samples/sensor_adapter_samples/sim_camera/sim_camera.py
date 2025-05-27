@@ -27,6 +27,10 @@ class SimCamera(PhysicalSensor):
         """Load dummy values from dummy values file."""
         self.dummy_values_filename = configs["dummy_values_file"]
 
+        # Handle relative paths based on current working directory
+        if not os.path.isabs(self.dummy_values_filename):
+            self.dummy_values_filename = os.path.abspath(self.dummy_values_filename)
+
         if not os.path.isfile(self.dummy_values_filename):
             print("sim vision warning: detected an invalid dummy file path. code will crash when called getSceneryState()")
             return tss_structs.Status(tss_constants.StatusFlags.SUCCESS)

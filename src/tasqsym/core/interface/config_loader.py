@@ -38,6 +38,10 @@ class ConfigLoader:
         if filename[0] == '$':  # read from environment variable
             filename = os.environ.get(filename[1:])
         
+        # Handle relative paths based on current working directory
+        if not os.path.isabs(filename):
+            filename = os.path.abspath(filename)
+        
         # currently does not support loading config from storage
 
         with open(filename) as f:
