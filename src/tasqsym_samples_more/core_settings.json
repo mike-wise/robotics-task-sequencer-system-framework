@@ -1,7 +1,7 @@
 {
     "general": {},
     "library": "tasqsym_samples_more.library.library",
-    "robot_structure": "../robotics-task-sequencer-system-framework/src/tasqsym_samples/robot_adapter_samples/sim_robot/robot_config.json",
+    "robot_structure": "../tasqsym_samples/robot_adapter_samples/sim_robot/robot_config.json",
     "engines": {
         "data": null,
         "kinematics": {

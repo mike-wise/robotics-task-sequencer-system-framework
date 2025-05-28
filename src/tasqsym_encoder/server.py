@@ -116,7 +116,7 @@ if cfl.data_engine is None: raise Exception("setup failed: could not load data")
 Main code begins here.
 """
 
-templates = Jinja2Templates(directory="../robotics-task-sequencer-system-framework/src/tasqsym_encoder/htmls")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "htmls"))
 
 app = fastapi.FastAPI()
 
