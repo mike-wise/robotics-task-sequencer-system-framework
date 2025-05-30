@@ -134,7 +134,7 @@ When running the core, make sure to remove the ```--btfile ``` option and instea
 The framework is designed so that users can develop and replace parts of the codes such as replacing prompts, replacing skills, replacing hardware connections with their own-developed (custom) modules. It is important to note that custom modules/configurations should be their own set of codes and separated from this repository as shown in the following diagram.
 
 ```
-└── robotics-task-sequencer-system-framework
+└── <task-sequencer-framework>
 └── <custom_prompt_set>
     ├── setup.py
     └── src

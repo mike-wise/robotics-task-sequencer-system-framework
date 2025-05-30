@@ -11,7 +11,7 @@ The below codes will not run an actual skill. Instead, the code will "print" col
 ### 1. Run the fallback sample
 
 ```
-python ../robotics-task-sequencer-system-framework/src/tasqsym/core.py --config ./src/tasqsym_samples_more/core_settings.json --btfile ./src/tasqsym_samples_more/sample_sequence/fallback_example.json --connection standalone
+python ../tasqsym/core.py --config ./core_settings.json --btfile ./sample_sequence/fallback_example.json --connection standalone
 ```
 
 You may also edit the fallback_example.json and switch the "@set_value" of the first node between "true" and "false" to see the difference in behavior.
@@ -19,7 +19,7 @@ You may also edit the fallback_example.json and switch the "@set_value" of the f
 ### 2. Run the retry until sample
 
 ```
-python ../robotics-task-sequencer-system-framework/src/tasqsym/core.py --config ./src/tasqsym_samples_more/core_settings.json --btfile ./src/tasqsym_samples_more/sample_sequence/retryuntil_example.json --connection standalone
+python ../tasqsym/core.py --config ./core_settings.json --btfile ./sample_sequence/retryuntil_example.json --connection standalone
 ```
 
 You may also edit the retryuntil_example.json and switch the "@set_value" of the first node between "true" and "false" to see the difference in behavior ("false" will never terminate as will keep retrying).
@@ -29,7 +29,7 @@ You may also edit the retryuntil_example.json and switch the "@set_value" of the
 This example will require access to an Azure OpenAI resource.
 
 ```
-python ../robotics-task-sequencer-system-framework/src/tasqsym_encoder/server.py --config ./src/tasqsym_samples_more/server_settings.json --aoai --aioutput --aimodel tasqsym_samples_more.aimodels.model.ComplexScenario --connection file --credentials <CREDENTIALS_FILE>
+python ../tasqsym_encoder/server.py --config ./server_settings.json --aoai --aioutput --aimodel tasqsym_samples_more.aimodels.model.ComplexScenario --connection file --credentials <CREDENTIALS_FILE>
 ```
 
 In the web browser UI, try entering ONE of the following sentences:
@@ -48,7 +48,7 @@ It is important to note that the system may not always return the correct behavi
 This example requires running the previous example first to generate the tasqsym_encoder_output.json.
 
 ```
-python ../robotics-task-sequencer-system-framework/src/tasqsym/core.py --config ./src/tasqsym_samples_more/core_settings.json --btfile ./tasqsym_encoder_output.json --connection standalone
+python ../tasqsym/core.py --config ./core_settings.json --btfile ./tasqsym_encoder_output.json --connection standalone
 ```
 
 The code will never terminate as there are no actual skill implementations for checking whether the goal statement is true or not. However, such a skill could be implemented by using vision-language models (e.g., ask gpt-4o whether the goal statement is true given an image of the environment captured from the robot's camera).
