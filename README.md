@@ -184,6 +184,65 @@ To properly set up the custom modules for the server, please create a settings.j
 
 To properly set up the custom modules for the core, please create a settings.json with the right settings and pass the JSON file using the ```--config ``` argument. If you are using your own skill set, please make sure the path to the library list is correctly set in the settings.json. If you are using your own hardware connections (adapter implementations), please make sure the path to the adapters are correctly set in the settings.json.
 
+## Testing
+
+The framework includes a comprehensive test suite using pytest to ensure reliability and maintainability.
+
+### Running Tests
+
+To run all tests:
+```bash
+pytest tests/
+```
+
+To run tests with verbose output:
+```bash
+pytest tests/ -v
+```
+
+To run a specific test file:
+```bash
+pytest tests/test_config_loader.py -v
+```
+
+### Code Coverage
+
+To run tests with code coverage analysis:
+```bash
+pytest tests/ --cov=src --cov-report=term-missing
+```
+
+To generate an HTML coverage report:
+```bash
+pytest tests/ --cov=src --cov-report=html
+```
+
+The HTML report will be generated in the `htmlcov/` directory. Open `htmlcov/index.html` in a web browser to view detailed coverage information.
+
+### Test Structure
+
+The test suite is organized into several categories:
+
+- **`tests/test_core_structs.py`** - Tests for core data structures (Status, Point, Quaternion, Pose)
+- **`tests/test_config_loader.py`** - Tests for configuration loading and validation
+- **`tests/test_integration.py`** - Integration tests for main components and sample files
+- **`tests/test_error_handling.py`** - Tests for error scenarios and edge cases
+- **`tests/test_math_utils.py`** - Tests for mathematical utility functions
+- **`tests/test_action_formats.py`** - Tests for robot action format classes
+- **`tests/test_blackboard.py`** - Tests for blackboard functionality
+- **`tests/test_bt_decoder.py`** - Tests for behavior tree decoding
+- **`tests/test_world_format.py`** - Tests for world format data structures
+- **`tests/test_engines.py`** - Tests for engine functionality
+
+### Dependencies
+
+The test suite requires the following additional dependencies:
+```bash
+pip install pytest>=8.2 pytest-asyncio>=1.0.0 pytest-cov>=6.0.0
+```
+
+These are included in the `requirements.txt` file.
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
