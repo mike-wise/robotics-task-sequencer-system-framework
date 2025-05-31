@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import asyncio
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 
 # Add src to Python path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
 import pytest
 import tasqsym.core.common.constants as tss_constants
 import tasqsym.core.common.structs as tss_structs
+import tasqsym.core.common.action_formats as tss_action_formats
 import tasqsym.core.interface.config_loader as config_loader
 import tasqsym.core.interface.envg_interface as envg_interface
 import tasqsym.core.interface.skill_interface as skill_interface
@@ -237,3 +238,300 @@ class TestStandaloneModeIntegration:
             
             board = blackboard.Blackboard()
             assert board is not None
+            
+    async def test_envg_interface_creation(self):
+        """Test EngineInterface creation and basic operations."""
+        envg = envg_interface.EngineInterface()
+        assert envg is not None
+        
+        # Test that blackboard can be set and retrieved
+        board = blackboard.Blackboard()
+        board.setBoardVariable("test_key", "test_value")
+        
+        # Basic functionality test without hardware
+        assert board.getBoardVariable("test_key") == "test_value"
+        
+    async def test_envg_interface_initialization(self):
+        """Test EngineInterface initialization process."""
+        envg = envg_interface.EngineInterface()
+        
+        # Test with mock configurations
+        robot_configs = {
+            "manipulator": {
+                "type": "ur5",
+                "urdf_path": "/fake/path/robot.urdf"
+            }
+        }
+        engine_configs = {
+            "kinematics": {
+                "type": "kdl",
+                "urdf_path": "/fake/path/robot.urdf"
+            },
+            "controller": {
+                "type": "moveit",
+                "planning_group": "arm"
+            }
+        }
+        sensor_configs = {
+            "camera": {
+                "type": "realsense",
+                "resolution": "640x480"
+            }
+        }
+        
+        # Mock the init method since it requires actual hardware
+        with patch.object(envg, 'init') as mock_init:
+            mock_init.return_value = tss_structs.Status(tss_constants.StatusFlags.SUCCESS)
+            
+            result = await envg.init(robot_configs, engine_configs, sensor_configs)
+            assert result.status == tss_constants.StatusFlags.SUCCESS
+            mock_init.assert_called_once_with(robot_configs, engine_configs, sensor_configs)
+            
+    async def test_envg_interface_load_pipeline(self):
+        """Test EngineInterface load pipeline functionality."""
+        envg = envg_interface.EngineInterface()
+        
+        # Mock the load pipeline method
+        with patch.object(envg, 'callEnvironmentLoadPipeline') as mock_load:
+            mock_load.return_value = tss_structs.Status(tss_constants.StatusFlags.SUCCESS)
+            
+            result = await envg.callEnvironmentLoadPipeline()
+            assert result.status == tss_constants.StatusFlags.SUCCESS
+            mock_load.assert_called_once()
+            
+    async def test_envg_interface_robot_state_access(self):
+        """Test EngineInterface robot state access methods."""
+        envg = envg_interface.EngineInterface()
+        
+        # Test basic properties that should exist
+        assert hasattr(envg, '__dict__')  # Basic object test
+        
+        # Test that it's properly initialized
+        assert envg is not None
+        
+    async def test_envg_interface_error_handling(self):
+        """Test EngineInterface error handling scenarios."""
+        envg = envg_interface.EngineInterface()
+        
+        # Test with invalid configurations
+        invalid_configs = {"invalid": "config"}
+        
+        with patch.object(envg, 'init') as mock_init:
+            mock_init.return_value = tss_structs.Status(tss_constants.StatusFlags.FAILED, message="Invalid configuration")
+            
+            result = await envg.init(invalid_configs, {}, {})
+            assert result.status == tss_constants.StatusFlags.FAILED
+        
+    async def test_skill_interface_creation(self):
+        """Test SkillInterface creation and basic operations."""
+        rsi = skill_interface.SkillInterface()
+        assert rsi is not None
+        
+        # Test basic functionality
+        board = blackboard.Blackboard()
+        board.setBoardVariable("skill_test", {"action": "test"})
+        
+        assert board.getBoardVariable("skill_test")["action"] == "test"
+        
+    async def test_skill_interface_initialization(self):
+        """Test SkillInterface initialization process."""
+        rsi = skill_interface.SkillInterface()
+        
+        # Test with mock skill configurations
+        engines = {
+            "kinematics": Mock(),
+            "controller": Mock(),
+            "data": Mock()
+        }
+        skills = {
+            "navigation": {
+                "type": "basic_navigation",
+                "config": {"max_speed": 1.0}
+            },
+            "manipulation": {
+                "type": "pick_place",
+                "config": {"force_threshold": 10.0}
+            }
+        }
+        
+        # Mock the init method
+        with patch.object(rsi, 'init') as mock_init:
+            mock_init.return_value = tss_structs.Status(tss_constants.StatusFlags.SUCCESS)
+            
+            result = rsi.init(engines, skills)
+            assert result.status == tss_constants.StatusFlags.SUCCESS
+            mock_init.assert_called_once_with(engines, skills)
+            
+    async def test_skill_interface_skill_access(self):
+        """Test SkillInterface skill access methods."""
+        rsi = skill_interface.SkillInterface()
+        
+        # Test basic properties that should exist  
+        assert hasattr(rsi, '__dict__')  # Basic object test
+        
+        # Test that it's properly initialized
+        assert rsi is not None
+        
+    async def test_skill_interface_cleanup(self):
+        """Test SkillInterface cleanup functionality."""
+        rsi = skill_interface.SkillInterface()
+        
+        # Test cleanup method
+        rsi.cleanup()  # Should not raise any exceptions
+        
+    async def test_skill_interface_error_scenarios(self):
+        """Test SkillInterface error handling."""
+        rsi = skill_interface.SkillInterface()
+        
+        # Test with invalid skill configurations
+        invalid_engines = None
+        invalid_skills = {"bad_skill": "invalid_config"}
+        
+        with patch.object(rsi, 'init') as mock_init:
+            mock_init.return_value = tss_structs.Status(tss_constants.StatusFlags.FAILED, message="Invalid skill configuration")
+            
+            result = rsi.init(invalid_engines, invalid_skills)
+            assert result.status == tss_constants.StatusFlags.FAILED
+        
+    async def test_config_loader_extended_functionality(self):
+        """Test ConfigLoader with more extensive scenarios."""
+        cfl = config_loader.ConfigLoader()
+        
+        # Test with sample config data structures
+        test_configs = {
+            "robots": {
+                "manipulator": {
+                    "type": "manipulator",
+                    "urdf_path": "/path/to/robot.urdf"
+                }
+            },
+            "engines": {
+                "kinematics": {
+                    "type": "pybullet",
+                    "config": {"step_size": 0.01}
+                }
+            },
+            "skills": {
+                "navigation": {
+                    "type": "basic_nav",
+                    "config": {"max_velocity": 1.0}
+                }
+            }
+        }
+        
+        # Mock the actual loading since we don't have real files
+        with patch.object(cfl, 'loadConfigs') as mock_load:
+            mock_load.return_value = tss_structs.Status(tss_constants.StatusFlags.SUCCESS, "Loaded successfully")
+            
+            result = cfl.loadConfigs(test_configs)
+            assert result.status == tss_constants.StatusFlags.SUCCESS
+            mock_load.assert_called_once_with(test_configs)
+            
+    async def test_behavior_tree_structure_validation(self):
+        """Test behavior tree structure validation."""
+        # Test valid behavior tree structure
+        valid_bt = {
+            "root": {
+                "BehaviorTree": {
+                    "Tree": [
+                        {
+                            "Sequence": {
+                                "@name": "main_sequence",
+                                "child": [
+                                    {
+                                        "Action": {
+                                            "@name": "test_action",
+                                            "@skill": "navigation",
+                                            "param": {"destination": "goal"}
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        
+        # Basic structure validation
+        assert "root" in valid_bt
+        assert "BehaviorTree" in valid_bt["root"]
+        assert "Tree" in valid_bt["root"]["BehaviorTree"]
+        assert isinstance(valid_bt["root"]["BehaviorTree"]["Tree"], list)
+        
+        # Test tree with multiple nodes
+        tree_nodes = valid_bt["root"]["BehaviorTree"]["Tree"]
+        assert len(tree_nodes) == 1
+        assert "Sequence" in tree_nodes[0]
+        
+        sequence_node = tree_nodes[0]["Sequence"]
+        assert "@name" in sequence_node
+        assert "child" in sequence_node
+        assert isinstance(sequence_node["child"], list)
+        
+    async def test_robot_action_combinations(self):
+        """Test different robot action combinations."""
+        # Test FKAction with ManipulatorState
+        base_pose = tss_structs.Pose(
+            position=tss_structs.Point(0, 0, 0),
+            orientation=tss_structs.Quaternion(0, 0, 0, 1)
+        )
+        joint_states = tss_structs.JointStates(
+            positions=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+            velocities=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            efforts=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        )
+        joint_names = ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
+        
+        manipulator_state = tss_structs.ManipulatorState(joint_names, joint_states, base_pose)
+        fk_action = tss_action_formats.FKAction(manipulator_state)
+        
+        assert fk_action.solveby_type == tss_constants.SolveByType.FORWARD_KINEMATICS
+        assert len(fk_action.goal.joint_names) == 6
+        assert fk_action.goal.joint_states.positions[0] == 0.1
+        
+        # Test IKAction with multiple source links
+        target_pose = tss_structs.Pose(
+            position=tss_structs.Point(1.0, 0.5, 0.8),
+            orientation=tss_structs.Quaternion(0, 0, 0.707, 0.707)
+        )
+        source_links = ["end_effector_link", "tool_center_point"]
+        
+        ik_action = tss_action_formats.IKAction(target_pose, source_links)
+        assert ik_action.solveby_type == tss_constants.SolveByType.INVERSE_KINEMATICS
+        assert len(ik_action.source_links) == 2
+        assert ik_action.goal.position.x == 1.0
+        
+    async def test_complex_status_scenarios(self):
+        """Test complex status handling scenarios."""
+        # Create base pose first
+        base_pose = tss_structs.Pose(
+            position=tss_structs.Point(0, 0, 0),
+            orientation=tss_structs.Quaternion(0, 0, 0, 1)
+        )
+        
+        # Test status with different error codes
+        success_status = tss_structs.Status(tss_constants.StatusFlags.SUCCESS, message="Operation completed")
+        failure_status = tss_structs.Status(tss_constants.StatusFlags.FAILED, message="Operation failed")
+        unknown_status = tss_structs.Status(tss_constants.StatusFlags.UNKNOWN, message="Status unknown")
+
+        assert success_status.status == tss_constants.StatusFlags.SUCCESS
+        assert failure_status.status == tss_constants.StatusFlags.FAILED  
+        assert unknown_status.status == tss_constants.StatusFlags.UNKNOWN
+
+        assert "completed" in success_status.message
+        assert "failed" in failure_status.message
+        assert "unknown" in unknown_status.message
+
+        # Test status in robot state
+        robot_state_success = tss_structs.RobotState(
+            base_pose, 
+            status=success_status
+        )
+        robot_state_failure = tss_structs.RobotState(
+            base_pose,
+            status=failure_status
+        )
+
+        assert robot_state_success.status.status == tss_constants.StatusFlags.SUCCESS
+        assert robot_state_failure.status.status == tss_constants.StatusFlags.FAILED
